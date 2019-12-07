@@ -26,7 +26,7 @@ virtual machine 2(hostname is `vpn2`)
 Run the following command in `vpn1`
 
 1. create tun device with local ip `192.169.66.1`
-1. route packets with destination IP address' 192.169.66.0/24 'to tun device
+1. route packets with destination IP address `192.169.66.0/24` to tun device
 1. create tcp channel with peer side(vpn2 10.0.2.7)
 
 ```shell script
@@ -51,7 +51,7 @@ Run the following command in `vpn1`
 Run the following command in `vpn2`
 
 1. create tun device with local ip `192.169.66.2`
-1. route packets with destination IP address' 192.169.66.0/24 'to tun device
+1. route packets with destination IP address `192.169.66.0/24` to tun device
 1. create tcp channel with peer side(vpn2 10.0.2.7)
 
 ```shell script
