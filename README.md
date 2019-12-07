@@ -12,10 +12,12 @@ bash ./script/build.sh
 
 # Example
 
+![vpn-principle](./vpn.png)
+
 Using virtualBox for example(`CentOS-7-x86_64-Minimal-1908.iso`)
 
 1. Set `NAT network`(not `NAT`)
-* In this example program, we use TCP channel to transmit IP packets, so we must ensure that the two virtual machine networks are connected
+* In this example program, we use TCP tunnel to transmit IP packets, so we must ensure that the two virtual machine networks are connected
 
 virtual machine 1(hostname is `vpn1`)
 * ip:`10.0.2.6`
@@ -27,7 +29,7 @@ Run the following command in `vpn1`
 
 1. create tun device with local ip `192.169.66.1`
 1. route packets with destination IP address `192.169.66.0/24` to tun device
-1. create tcp channel with peer side(vpn2 `10.0.2.7`)
+1. create tcp tunnel with peer side(vpn2 `10.0.2.7`)
 
 ```shell script
 [root@vpn-1 /]$ ./vpn_linux_amd64 10.0.2.7 9999 192.169.66.1/24
@@ -52,7 +54,7 @@ Run the following command in `vpn2`
 
 1. create tun device with local ip `192.169.66.2`
 1. route packets with destination IP address `192.169.66.0/24` to tun device
-1. create tcp channel with peer side(vpn2 `10.0.2.6`)
+1. create tcp tunnel with peer side(vpn2 `10.0.2.6`)
 
 ```shell script
 [root@vpn-2 /]$ ./vpn_linux_amd64 10.0.2.6 9999 192.169.66.2/24
