@@ -3,7 +3,7 @@ package tunnel
 import (
 	"errors"
 	"fmt"
-	utils "github.com/liuyehcf/common-utils"
+	buf "github.com/liuyehcf/common-gtools/buffer"
 	"net"
 )
 
@@ -62,7 +62,7 @@ type Option struct {
 	Value uint16
 }
 
-func ParseIPFrame(buffer utils.Buffer) (*IPFrame, error) {
+func ParseIPFrame(buffer buf.Buffer) (*IPFrame, error) {
 	// no enough data for first 4 bytes
 	if buffer.ReadableBytes() < 4 {
 		return nil, nil

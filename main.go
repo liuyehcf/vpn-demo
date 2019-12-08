@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	utils "github.com/liuyehcf/common-utils"
+	"github.com/liuyehcf/common-gtools/assert"
+	buf "github.com/liuyehcf/common-gtools/buffer"
 	"github.com/liuyehcf/vpn-demo/tunnel"
 	"github.com/songgao/water"
 	"log"
@@ -49,15 +50,15 @@ func main() {
 func parseTunIp() {
 	var err error
 	peerIp = net.ParseIP(os.Args[1]).To4()
-	utils.AssertNotNil(peerIp, "peerIp invalid")
+	assert.AssertNotNil(peerIp, "peerIp invalid")
 
 	peerPort, err = strconv.Atoi(os.Args[2])
-	utils.AssertNil(err, "peerPort illegal")
+	assert.AssertNil(err, "peerPort illegal")
 
 	tunIp, tunNet, err = net.ParseCIDR(os.Args[3])
-	utils.AssertNil(err, "network illegal")
-	utils.AssertNotNil(tunIp, "network illegal")
-	utils.AssertNotNil(tunNet, "network illegal")
+	assert.AssertNil(err, "network illegal")
+	assert.AssertNotNil(tunIp, "network illegal")
+	assert.AssertNotNil(tunNet, "network illegal")
 	tunIp = tunIp.To4()
 
 	log.Printf("tunIp='%s'", tunIp.String())
@@ -68,7 +69,7 @@ func createTunInterface() {
 	tunIf, err = water.New(water.Config{
 		DeviceType: water.TUN,
 	})
-	utils.AssertNil(err, "failed to create tunIf")
+	assert.AssertNil(err, "failed to create tunIf")
 
 	log.Printf("Tun Interface Name: %s\n", tunIf.Name())
 }
@@ -85,7 +86,7 @@ func createRawSocket() {
 	// create ip level raw socket
 	var err error
 	fd, err = syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_RAW)
-	utils.AssertNil(err, "failed to create raw socket")
+	assert.AssertNil(err, "failed to create raw socket")
 }
 
 func execCommand(command string) {
@@ -94,19 +95,19 @@ func execCommand(command string) {
 	cmd := exec.Command("/bin/bash", "-c", command)
 
 	err := cmd.Run()
-	utils.AssertNil(err, "failed to execute command")
+	assert.AssertNil(err, "failed to execute command")
 
 	state := cmd.ProcessState
-	utils.AssertTrue(state.Success(), fmt.Sprintf("exec command '%s' failed, code=%d", command, state.ExitCode()))
+	assert.AssertTrue(state.Success(), fmt.Sprintf("exec command '%s' failed, code=%d", command, state.ExitCode()))
 }
 
 func tunReceiveLoop() {
-	buffer := utils.NewByteBuffer(65536)
+	buffer := buf.NewByteBuffer(65536)
 	packet := make([]byte, 65536)
 	for {
 		n, err := tunIf.Read(packet)
 
-		utils.AssertNil(err, "failed to read data from tun")
+		assert.AssertNil(err, "failed to read data from tun")
 
 		buffer.Write(packet[:n])
 		for {
@@ -133,7 +134,7 @@ func tcpSendLoop() {
 	var err error
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", peerIp, peerPort))
-	utils.AssertNil(err, "failed to parse tcpAddr")
+	assert.AssertNil(err, "failed to parse tcpAddr")
 
 	var conn *net.TCPConn
 
@@ -163,29 +164,29 @@ func tcpListenerLoop() {
 	var err error
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", "0.0.0.0", peerPort))
-	utils.AssertNil(err, "failed to parse tcpAddr")
+	assert.AssertNil(err, "failed to parse tcpAddr")
 
 	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
-	utils.AssertNil(err, "failed to listener")
+	assert.AssertNil(err, "failed to listener")
 
 	log.Printf("listener on '%s'\n", tcpAddr.String())
 	conn, err := tcpListener.AcceptTCP()
-	utils.AssertNil(err, "failed to accept")
+	assert.AssertNil(err, "failed to accept")
 
 	log.Println("accept peer success")
 
-	buffer := utils.NewByteBuffer(65536)
+	buffer := buf.NewByteBuffer(65536)
 	packet := make([]byte, 65536)
 
 	for {
 		n, err := conn.Read(packet)
-		utils.AssertNil(err, "failed to read from tcp tunnel")
+		assert.AssertNil(err, "failed to read from tcp tunnel")
 
 		buffer.Write(packet[:n])
 
 		for {
 			frame, err := tunnel.ParseIPFrame(buffer)
-			utils.AssertNil(err, "failed to parse ip package from tcp tunnel")
+			assert.AssertNil(err, "failed to parse ip package from tcp tunnel")
 
 			if err != nil {
 				log.Println(err)
@@ -203,7 +204,7 @@ func tcpListenerLoop() {
 				Addr: tunnel.IPToArray4(frame.Target),
 			}
 			err = syscall.Sendto(fd, frame.ToBytes(), 0, &addr)
-			utils.AssertNil(err, "failed to send data through raw socket")
+			assert.AssertNil(err, "failed to send data through raw socket")
 		}
 	}
 }
